@@ -1,10 +1,6 @@
 (function() {
 'use strict';
 
-function test() {
-  debugger
-}
-
 function routes($routeProvider) {
   $routeProvider
     .when('/', {

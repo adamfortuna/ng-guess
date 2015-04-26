@@ -22,6 +22,7 @@ var autoprefixer  = require('gulp-autoprefixer');
 var uglify        = require('gulp-uglify');
 var concat        = require('gulp-concat');
 var templateCache = require('gulp-angular-templatecache');
+var eslint        = require('gulp-eslint');
 
 // -------------------------------------
 //   Variables
@@ -59,6 +60,24 @@ var options = {
       module: 'templates',
       standalone: true
     }
+  },
+  eslint: {
+    format: 'checkstyle',
+    config: {
+      globals: {
+        'angular': true,
+        '_': true,
+        'window': true,
+        '$': true
+      },
+      rules: {
+        quotes: ['single']
+      },
+      envs: [
+        'browser'
+      ],
+      quotes: 'single'
+    }
   }
 };
 
@@ -80,6 +99,10 @@ gulp.task('default', function() {
   });
   watch(options.templates.files, function(files) {
     gulp.start('javascript:templates');
+  });
+
+  watch(options.js.files, function(files) {
+    gulp.start('lint');
   });
 });
 
@@ -134,4 +157,11 @@ gulp.task('javascript:templates', function () {
       .pipe(templateCache(options.templates.destFile, options.templates.options))
       .pipe(concat(options.templates.destFile))
       .pipe(gulp.dest(options.templates.destDir));
+});
+
+gulp.task('lint', function () {
+    return gulp.src(options.js.files)
+        .pipe(eslint(options.eslint.config))
+        .pipe(eslint.format())
+        .pipe(eslint.failOnError());
 });

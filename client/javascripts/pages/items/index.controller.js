@@ -1,9 +1,6 @@
 (function() {
 'use strict';
 
-angular.module(window.appName)
-.controller('ItemIndexController', ItemIndexController);
-
 function ItemIndexController() {
   this.items = [
     'This data is set in:',
@@ -14,5 +11,8 @@ function ItemIndexController() {
     'if you have `gulp` running.'
   ];
 }
+
+angular.module(window.appName)
+.controller('ItemIndexController', ItemIndexController);
 
 }());
