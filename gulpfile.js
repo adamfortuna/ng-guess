@@ -40,14 +40,15 @@ var options = {
   vendorJs: {
     files: ['client/components/lodash/lodash.js',
             'client/components/angular/angular.js',
-            'client/components/angular-route/angular-route.js',
-            'client/components/jquery/dist/jquery.js',
-            'client/components/bootstrap/dist/js/bootstrap.js'],
+            'client/components/firebase/firebase.js',
+            'client/components/angularfire/dist/angularfire.js',
+            'client/components/angular-route/angular-route.js'],
     destFile: 'vendor.js',
     destDir:  'public/javascripts'
   },
   js: {
-    files: ['client/javascripts/application.js',
+    files: ['client/javascripts/config.js',
+            'client/javascripts/application.js',
             'client/javascripts/**/*.js'],
     destFile: 'application.js',
     destDir:  'public/javascripts'
@@ -68,7 +69,8 @@ var options = {
         'angular': true,
         '_': true,
         'window': true,
-        '$': true
+        '$': true,
+        'Firebase': true
       },
       rules: {
         quotes: ['single']

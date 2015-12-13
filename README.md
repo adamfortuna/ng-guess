@@ -24,4 +24,19 @@ In another terminal, you can start a server:
 npm start
 ```
 
+```
+{
+  "rules": {
+    // public read access
+    ".read": true,
+    "users": {
+      "$uid": {
+        // write access only to your own data
+        ".write": "$uid === auth.uid"
+      }
+    }
+  }
+}
+```
+
 Now you can open up [http://localhost:8080](http://localhost:8080) and see if everything worked!

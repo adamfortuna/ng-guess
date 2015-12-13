@@ -1,15 +1,31 @@
 <!DOCTYPE html>
-<html ng-app='AngularSeed'>
+<html ng-app='Guess'>
 <head>
-  <title>Angular Seed</title>
+  <title>ng-guess: When do you think Angular 2.0 will be released?</title>
   <link rel='stylesheet' href='stylesheets/application.css' />
   <script src='javascripts/vendor.js'></script>
   <script src='javascripts/templates.js'></script>
   <script src='javascripts/application.js'></script>
 </head>
 <body>
-  <div class='container'>
-    <div ng-view></div>
-  </div>
+
+  <section class='header'>
+    <div class='container'>
+      <div class='row'>
+        <div class='col-md-8 col-md-offset-2 logo'>
+          <h1>ng-guess</h1>
+          <p class='lead'>When do you think Angular 2.0 will be ready?</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class='main'>
+    <div class='container'>
+      <div class='row'>
+        <div class='col-md-offset-2 col-md-8' ng-view></div>
+      </div>
+    </div>
+  </section>
 </body>
 </html>

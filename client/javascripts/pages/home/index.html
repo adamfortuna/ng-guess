@@ -1,0 +1,28 @@
+<p>We've tracked {{ctrl.guesses.length}} guesses so far. Add yours!</p>
+
+
+<div ng-if='ctrl.auth'>
+  <p>Hello, {{ ctrl.auth.github.displayName }}</p>
+
+  <div ng-if='ctrl.user'>
+    Make a guess!
+    <gs-date user='ctrl.user'></gs-date>
+
+    <div ng-if='ctrl.user.guessDate'>
+      <p>You made a guess! {{ctrl.user.guessDate}}</p>
+    </div>
+  </div>
+
+  <button ng-click='ctrl.logout()'>Logout</button>
+</div>
+
+
+<div ng-hide='ctrl.auth'>
+  Login to make a guess!
+  <button ng-click='ctrl.login()'>Login</button>
+</div>
+
+
+<div ng-if='ctrl.guesses'>
+  {{ctrl.guesses}}
+</div>
