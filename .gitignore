@@ -1,8 +1,2 @@
 node_modules/
 client/components
-
-public/javascripts/application.js
-public/javascripts/templates.js
-public/javascripts/vendor.js
-public/stylesheets/application.css
-public/stylesheets/application.min.css
