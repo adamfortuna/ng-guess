@@ -50,41 +50,6 @@ angular.module(window.appName).config(routes);
 (function() {
 'use strict';
 
-function GuessController(AuthService) {
-  if(!this.user.guessDate || (this.user.guessDate < new Date())) {
-    this.user.guessDate = new Date();
-  }
-
-  this.guessChanged = function() {
-    var guess = this.user.guessDate ? this.user.guessDate.getTime() : null;
-    AuthService.user.ref.child('guessDate').set(guess);
-  };
-}
-
-function DateDirective() {
-  return {
-    replace: true,
-    restrict: 'E',
-    scope: { user: '=' },
-    templateUrl: 'guess/date.html',
-    controller: GuessController,
-    controllerAs: 'ctrl',
-    bindToController: true
-  };
-}
-
-angular.module(window.appName)
-.directive('gsDate', DateDirective);
-
-
-}());
-
-/*eslint no-console: 0*/
-/*eslint no-debugger: 0*/
-
-(function() {
-'use strict';
-
 function IndexController(_, AuthService, UserFactory, currentUser, FIREBASE_URL) {
   var self = this;
   self.login = AuthService.login;
@@ -108,6 +73,15 @@ function IndexController(_, AuthService, UserFactory, currentUser, FIREBASE_URL)
 
     self.guesses = _.compact(guesses);
   });
+
+  self.guessMade = function() {
+    if(self.user) {
+      var guessMade = !_.isUndefined(self.user.guessDate) && self.user.guessDate;
+      return guessMade;
+    } else {
+      return false;
+    }
+  };
 
   self.addRandomGuesses = function(guesses) {
     for(var i = 0; i < guesses; i++) {
@@ -144,6 +118,56 @@ IndexController.$inject = ['_', 'AuthService', 'UserFactory', 'currentUser', 'FI
 
 angular.module(window.appName)
 .controller('IndexController', IndexController);
+
+}());
+
+/*eslint no-console: 0*/
+/*eslint no-debugger: 0*/
+
+// ng-model='ctrl.user.guessDate' ng-change='ctrl.guessChanged()'
+(function() {
+'use strict';
+
+function GuessController(AuthService) {
+  this.guessChanged = function(e) {
+    var date;
+    e.preventDefault();
+    if($(this).val()) {
+      date = new Date($(this).val()).getTime();
+    } else {
+      date = null;
+    }
+
+    AuthService.user.ref.child('guessDate').set(date);
+  };
+}
+
+function DateDirective() {
+  return {
+    replace: true,
+    restrict: 'E',
+    scope: { user: '=' },
+    templateUrl: 'guess/date.html',
+    controller: GuessController,
+    controllerAs: 'ctrl',
+    bindToController: true,
+    link: function(scope, el, attrs, ctrl) {
+      console.log('pickadate');
+      var input = $(el[0]).find('input');
+      input.pickadate({
+        hiddenName: true,
+        min: new Date(),
+        format: 'mmmm d, yyyy'
+      });
+
+      input.on('change', ctrl.guessChanged);
+    }
+  };
+}
+
+angular.module(window.appName)
+.directive('gsDate', DateDirective);
+
 
 }());
 
@@ -244,9 +268,6 @@ function DistributionChartDirective(d3) {
     link: function(scope, el, attrs, ctrl) {
       el.empty();
 
-      console.log('ctrl.guessDate', ctrl.guessDate);
-      console.log('ctrl.guesses.length', ctrl.guesses.length);
-
       var dates = ctrl.guesses.sort(ctrl.guesses, ctrl.sortByDateAscending),
         mean = new Date(d3.mean(dates)),
         week = d3.time.format("%Y-%U"),
@@ -340,7 +361,7 @@ function DistributionChartDirective(d3) {
          .attr('class', 'date--background')
          .attr('x', 0)
          .attr('height', 30)
-         .attr('width', 180);
+         .attr('width', 200);
       // Add text for the line
       medianGroup.append("text")
         .attr('class', 'date--text')
@@ -407,7 +428,6 @@ function AuthService($rootScope, $firebaseAuth, FIREBASE_URL, UserFactory) {
   function setUser(auth) {
     service.user.auth = auth;
 
-    console.log('AuthService.setUser');
     if(auth) {
       service.user.current = UserFactory.new(auth.uid);
       service.user.ref = usersRef.child(auth.uid);

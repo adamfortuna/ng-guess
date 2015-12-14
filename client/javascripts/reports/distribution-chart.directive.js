@@ -63,9 +63,6 @@ function DistributionChartDirective(d3) {
     link: function(scope, el, attrs, ctrl) {
       el.empty();
 
-      console.log('ctrl.guessDate', ctrl.guessDate);
-      console.log('ctrl.guesses.length', ctrl.guesses.length);
-
       var dates = ctrl.guesses.sort(ctrl.guesses, ctrl.sortByDateAscending),
         mean = new Date(d3.mean(dates)),
         week = d3.time.format("%Y-%U"),
@@ -159,7 +156,7 @@ function DistributionChartDirective(d3) {
          .attr('class', 'date--background')
          .attr('x', 0)
          .attr('height', 30)
-         .attr('width', 180);
+         .attr('width', 200);
       // Add text for the line
       medianGroup.append("text")
         .attr('class', 'date--text')

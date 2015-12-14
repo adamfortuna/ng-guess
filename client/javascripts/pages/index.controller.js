@@ -28,6 +28,15 @@ function IndexController(_, AuthService, UserFactory, currentUser, FIREBASE_URL)
     self.guesses = _.compact(guesses);
   });
 
+  self.guessMade = function() {
+    if(self.user) {
+      var guessMade = !_.isUndefined(self.user.guessDate) && self.user.guessDate;
+      return guessMade;
+    } else {
+      return false;
+    }
+  };
+
   self.addRandomGuesses = function(guesses) {
     for(var i = 0; i < guesses; i++) {
       var future = new Date(),

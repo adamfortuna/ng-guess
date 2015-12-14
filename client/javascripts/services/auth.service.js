@@ -17,7 +17,6 @@ function AuthService($rootScope, $firebaseAuth, FIREBASE_URL, UserFactory) {
   function setUser(auth) {
     service.user.auth = auth;
 
-    console.log('AuthService.setUser');
     if(auth) {
       service.user.current = UserFactory.new(auth.uid);
       service.user.ref = usersRef.child(auth.uid);

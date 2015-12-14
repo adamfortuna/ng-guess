@@ -1,6 +1,4 @@
 <div ng-hide='ctrl.auth'>
-
-
   <div class='chart--wrapper'>
     <p class='chart--teaser  text-center'>
       <button class='btn btn-lg btn-block btn-social btn-github' ng-click='ctrl.login()'>
@@ -11,24 +9,31 @@
   </div>
 </div>
 
-
-
 <div ng-if='ctrl.auth'>
   <div ng-if='ctrl.user'>
     <gs-date user='ctrl.user'></gs-date>
   </div>
 
-  <div class='guess--overview row' ng-if='ctrl.guesses.length > 0'>
-    <gs-average class='col-md-5 col-md-offset-3' guesses='ctrl.guesses'></gs-average>
+  <div ng-if='ctrl.guessMade()'>
+    <div class='guess--overview row' ng-if='ctrl.guesses.length > 0'>
+      <gs-average class='col-md-5 col-md-offset-3' guesses='ctrl.guesses'></gs-average>
+    </div>
+
+    <gs-distribution-chart guesses='ctrl.guesses' guessDate='ctrl.user.guessDate' ng-if='ctrl.guesses.length > 0' ></gs-distribution-chart>
   </div>
-
-  <gs-distribution-chart guesses='ctrl.guesses' guessDate='ctrl.user.guessDate' ng-if='ctrl.guesses.length > 0'></gs-distribution-chart>
-
-  <button ng-click='ctrl.addRandomGuesses(1000)' style='display:none;'>100 Random Guesses</button>
-
-
-  <a ng-if='ctrl.auth' class='logout--button btn btn-sm btn-social btn-github' ng-click='ctrl.logout()'>
-    <span class="fa fa-github"></span> Logout
-  </a>
-
 </div>
+
+
+<footer class='row footer'>
+  <div class='col-ls-offset-2 col-ls-7 footer--list'>
+    <ul class='list-inline'>
+      <li><a class='footer--link' href='' ng-href='#/'>Home</a></li>
+      <li><a class='footer--link' href='' ng-href='#/about'>About</a></li>
+      <li class='pull-right'>
+        <a ng-if='ctrl.auth' class='logout--button btn btn-sm btn-social btn-github' ng-click='ctrl.logout()'>
+          <span class="fa fa-github"></span> Logout
+        </a>
+      </li>
+    </ul>
+  </div>
+</footer>
