@@ -39,6 +39,7 @@ var options = {
   },
   vendorJs: {
     files: ['client/components/lodash/lodash.js',
+            'client/components/d3/d3.js',
             'client/components/angular/angular.js',
             'client/components/firebase/firebase.js',
             'client/components/angularfire/dist/angularfire.js',

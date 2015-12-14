@@ -1,7 +1,12 @@
 @import '../components/bootstrap/scss/bootstrap'
+@import 'social'
+@import 'graph'
 
 body
   min-width: 460px
+
+a
+  cursor: hand
 
 .header
   height: 200px
@@ -10,14 +15,51 @@ body
   color: #fff
   border-top: 8px solid #027ddf
 
-  .logo
-    padding: 2em 0
-    background: url(/images/ngguess.png) no-repeat left
-    padding-left: 180px
-    background-size: 160px 160px
-    background-position: 0 20px
+  .title
+    padding: 1.2em 0 2em
+    .navbar-brand
+      height: 160px
   h1
+    padding-top: .2em
     font-size: 4em
 
 .main
   margin-top: 2em
+
+.blurry
+  opacity: 0.6
+  -webkit-filter: blur(8px)
+  filter: blur(8px)
+
+.guess--wrapper
+  label
+    font-size: 1.8em
+    font-color: #333
+.guess--date
+  font-size: 3em
+  text-align: center
+  border: 0.0625rem solid #e5e5e5
+  border-radius: 4px
+
+.guess--overview
+  margin-top: 2em
+
+.chart--wrapper
+  position: relative
+  .chart--teaser
+    position: absolute
+    z-index: 1
+    top: 150px
+    left: 180px
+
+
+.footer
+  margin: 4em 0 2em
+  .footer--list
+    border-top: 1px solid #ddd
+
+  ul
+    margin: 1em 0
+  .footer--link
+    color: #888
+    padding-right: 1em

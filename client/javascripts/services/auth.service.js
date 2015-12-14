@@ -22,13 +22,13 @@ function AuthService($rootScope, $firebaseAuth, FIREBASE_URL, UserFactory) {
       service.user.current = UserFactory.new(auth.uid);
       service.user.ref = usersRef.child(auth.uid);
       service.user.ref.child('updated_at').set(Firebase.ServerValue.TIMESTAMP);
-      var auth = {
+      var details = {
         id: auth.github.id,
         displayName: auth.github.displayName,
         username: auth.github.username,
         profileImageURL: auth.github.profileImageURL
-      }
-      service.user.ref.child('auth').set(auth);
+      };
+      service.user.ref.child('auth').set(details);
     } else {
       service.user.current = null;
       service.user.ref = null;

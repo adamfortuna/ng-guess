@@ -1,0 +1,32 @@
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #444;
+  shape-rendering: crispEdges;
+}
+
+text {
+  color: #888;
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  font-size: 12px;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 4px;
+}
+
+.date--group {
+}
+.date--line {
+  stroke: #ccc;
+  stroke-width: 1px;
+}
+.date--text {
+  fill: #000;
+}
+.date--background {
+  fill: #000;
+  opacity: 0.2;
+}

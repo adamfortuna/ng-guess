@@ -5,10 +5,8 @@
 'use strict';
 
 function GuessController(AuthService) {
-  console.log('GuessController', this.user)
   if(!this.user.guessDate || (this.user.guessDate < new Date())) {
     this.user.guessDate = new Date();
-    console.log('guess', this.user.guessDate);
   }
 
   this.guessChanged = function() {

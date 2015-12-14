@@ -1,0 +1,34 @@
+<div ng-hide='ctrl.auth'>
+
+
+  <div class='chart--wrapper'>
+    <p class='chart--teaser  text-center'>
+      <button class='btn btn-lg btn-block btn-social btn-github' ng-click='ctrl.login()'>
+        <span class="fa fa-github"></span> Sign in with GitHub to make your guess<br/> and see all <b>{{ctrl.guesses.length}}</b> guesses
+      </button>
+    </p>
+    <gs-distribution-chart class='blurry' guesses='ctrl.guesses' ng-if='ctrl.guesses.length > 0'></gs-distribution-chart>
+  </div>
+</div>
+
+
+
+<div ng-if='ctrl.auth'>
+  <div ng-if='ctrl.user'>
+    <gs-date user='ctrl.user'></gs-date>
+  </div>
+
+  <div class='guess--overview row' ng-if='ctrl.guesses.length > 0'>
+    <gs-average class='col-md-5 col-md-offset-3' guesses='ctrl.guesses'></gs-average>
+  </div>
+
+  <gs-distribution-chart guesses='ctrl.guesses' guessDate='ctrl.user.guessDate' ng-if='ctrl.guesses.length > 0'></gs-distribution-chart>
+
+  <button ng-click='ctrl.addRandomGuesses(1000)' style='display:none;'>100 Random Guesses</button>
+
+
+  <a ng-if='ctrl.auth' class='logout--button btn btn-sm btn-social btn-github' ng-click='ctrl.logout()'>
+    <span class="fa fa-github"></span> Logout
+  </a>
+
+</div>

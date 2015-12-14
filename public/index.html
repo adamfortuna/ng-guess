@@ -3,16 +3,15 @@
 <head>
   <title>ng-guess: When do you think Angular 2.0 will be released?</title>
   <link rel='stylesheet' href='stylesheets/application.css' />
-  <script src='javascripts/vendor.js'></script>
-  <script src='javascripts/templates.js'></script>
-  <script src='javascripts/application.js'></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 </head>
 <body>
 
   <section class='header'>
     <div class='container'>
       <div class='row'>
-        <div class='col-md-8 col-md-offset-2 logo'>
+        <div class='col-md-7 col-md-offset-2 title'>
+          <img alt='Logo' class='navbar-brand' src='/images/ngguess.png' />
           <h1>ng-guess</h1>
           <p class='lead'>When do you think Angular 2.0 will be ready?</p>
         </div>
@@ -23,9 +22,22 @@
   <section class='main'>
     <div class='container'>
       <div class='row'>
-        <div class='col-md-offset-2 col-md-8' ng-view></div>
+        <div class='col-md-offset-2 col-md-7' ng-view></div>
       </div>
+
+      <footer class='row footer'>
+        <div class='col-md-offset-2 col-md-7 footer--list'>
+          <ul class='list-inline'>
+            <li><a class='footer--link' href='' ng-href='#/'>Home</a></li>
+            <li><a class='footer--link' href='' ng-href='#/about'>About</a></li>
+          </ul>
+        </div>
+      </footer>
     </div>
   </section>
+
+  <script src='javascripts/vendor.js'></script>
+  <script src='javascripts/templates.js'></script>
+  <script src='javascripts/application.js'></script>
 </body>
 </html>
