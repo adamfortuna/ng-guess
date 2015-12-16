@@ -4931,7 +4931,7 @@ text {
   opacity: 0.2; }
 
 .guess--background {
-  fill: red;
+  fill: #027ddf;
   opacity: 0.2; }
 
 .picker, .picker__holder {
@@ -5282,3 +5282,16 @@ a {
   .footer .footer--link {
     color: #888;
     padding-right: 1em; }
+
+.gs-distribution-table {
+  margin-top: 2em;
+  padding-top: 1em; }
+  .gs-distribution-table h3 {
+    margin-bottom: 1em; }
+  .gs-distribution-table table {
+    width: 300px;
+    margin: 0 auto; }
+    .gs-distribution-table table th {
+      background-color: #e1f2ff; }
+    .gs-distribution-table table td, .gs-distribution-table table th {
+      padding: 8px; }
