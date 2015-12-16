@@ -24,6 +24,8 @@
         </div>
 
         <gs-distribution-chart guesses='ctrl.guesses' animate='true' guessDate='ctrl.user.guessDate' ng-if='ctrl.guesses.length > 0' ></gs-distribution-chart>
+
+        <gs-distribution-table class='gs-distribution-table' guesses='ctrl.guesses' ng-if='ctrl.guesses.length > 0' ></gs-distribution-table>
       </div>
     </div>
   </div>
