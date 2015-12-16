@@ -17,6 +17,8 @@ function DistributionChartController(d3, $scope) {
   this.height = 400 - this.margin.top - this.margin.bottom;
   this.monthFormat = d3.time.format("%Y-%m");
   this.dayFormat = d3.time.format("%B %e, %Y");
+  this.monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  this.bisectDate = d3.bisector(function(d) { return self.timeForKey(d.key); }).left;
 
   $scope.$watch('ctrl.guesses', function(data) {
     if(self.isWatching) {
@@ -31,6 +33,22 @@ function DistributionChartController(d3, $scope) {
   this.timeForKey = function(key) {
     var t = key.split('-');
     return new Date(t[0], t[1], 1);
+  };
+
+  this.mousemove = function() {
+    try {
+      var x0 = self.x.invert(d3.mouse(this)[0]),
+          i = self.bisectDate(self.data, x0, 1),
+          d0 = self.data[i - 1],
+          d1 = self.data[i],
+          d = x0 - self.timeForKey(d0.key) > self.timeForKey(d1.key) - x0 ? d1 : d0;
+      self.focus.attr("transform", "translate(" + self.x(self.timeForKey(d.key)) + "," + self.y(d.values.length) + ")");
+      var month = d.key.split('-')[1],
+          monthName = self.monthNames[+month - 1];
+      self.focus.select("text").text(monthName + ': ' + d.values.length);
+    } catch(e) {
+      console.log('Error on mouseover: ' + this);
+    }
   };
 
   this.parseData = function(data) {
@@ -72,11 +90,14 @@ function DistributionChartController(d3, $scope) {
 
   this.update = function(rawData) {
     if(this.svg) {
-      var data = this.parseData(rawData);
-      this.updateScales(data);
-      this.updateAxis(data);
-      this.updateLine(data);
+      this.data = this.parseData(rawData);
+      this.updateScales(this.data);
+      this.updateAxis(this.data);
+      this.updateLine(this.data);
       this.updateMeanLine(rawData);
+
+      this.rect.on("mousemove", null);
+      this.rect.on("mousemove", this.mousemove);
     }
   };
 
@@ -150,6 +171,7 @@ function DistributionChartController(d3, $scope) {
 
   this.startChart = function() {
     var data = this.parseData(this.guesses);
+    this.data = data;
 
     this.x = d3.time.scale().range([0, this.width]);
     this.y = d3.scale.linear().range([this.height, 0]);
@@ -201,6 +223,26 @@ function DistributionChartController(d3, $scope) {
 
     // Draw Median Line
     this.updateMeanLine(this.guesses);
+
+
+
+    // Mouseover
+    this.focus = this.svg.append('g')
+      .attr('class', 'focus')
+      .style('display', 'none');
+    this.focus.append('circle').attr('r', 4.5);
+    this.focus.append('text')
+      .attr('x', 9)
+      .attr('dy', '.35em');
+    this.rect = this.svg.append("rect")
+          .attr("class", "overlay")
+          .attr("width", this.width)
+          .attr("height", this.height)
+          .on("mouseover", function() { self.focus.style("display", null); })
+          .on("mouseout", function() { self.focus.style("display", "none"); })
+          .on("mousemove", this.mousemove);
+
+
 
     setTimeout(function() {
       self.isWatching = true;
