@@ -16,7 +16,11 @@ function UserFactory($firebaseObject, $firebaseArray, FIREBASE_URL) {
       var changed = $firebaseObject.prototype.$$updated.apply(this, arguments);
 
       if(changed) {
-        this.guessDate = new Date(this.guessDate || new Date());
+        if(this.guessDate) {
+          this.guessDate = new Date(this.guessDate);
+        } else {
+          this.guessDate = null;
+        }
       }
 
       return changed;

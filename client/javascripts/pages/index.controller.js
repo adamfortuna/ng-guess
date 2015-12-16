@@ -30,8 +30,8 @@ function IndexController(_, AuthService, UserFactory, currentUser, FIREBASE_URL)
 
   self.guessMade = function() {
     if(self.user) {
-      var guessMade = !_.isUndefined(self.user.guessDate) && self.user.guessDate;
-      return guessMade;
+      var noGuessMade = _.isUndefined(self.user.guessDate) || _.isNull(self.user.guessDate);
+      return !noGuessMade;
     } else {
       return false;
     }

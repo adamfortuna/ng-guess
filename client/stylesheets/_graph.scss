@@ -13,20 +13,26 @@ text {
 
 .line {
   fill: none;
-  stroke: steelblue;
+  stroke: #0179db;
   stroke-width: 4px;
+  opacity: 0.2;
 }
 
 .date--group {
 }
 .date--line {
-  stroke: #ccc;
+  stroke: #0179db;
   stroke-width: 1px;
 }
 .date--text {
   fill: #000;
 }
 .date--background {
-  fill: #000;
+  fill: #027ddf;
+  opacity: 0.2;
+}
+
+.guess--background {
+  fill: #027ddf;
   opacity: 0.2;
 }

@@ -1,12 +1,18 @@
-<p>ng-guess was created by <a href='http://adamfortuna.com'>Adam Fortuna</a> as a way to learn a little more about <a href='firebase.com'>Firebase</a> and <a href='http://d3js.org/'>D3.js</a>.</p>
+<div class='row'>
+  <div class='col-lg-offset-2 col-lg-7'>
+    <p>ng-guess was created by <a href='http://adamfortuna.com'>Adam Fortuna</a> as a way to learn a little more about <a href='firebase.com'>Firebase</a> and <a href='http://d3js.org/'>D3.js</a>.</p>
 
-<p>The code for ng-guess is available on GitHub at <a href='https://github.com/adamfortuna/ng-guess'>adamfortuna/ng-guess</a>.</p>
+    <p>The code for ng-guess is available on GitHub at <a href='https://github.com/adamfortuna/ng-guess'>adamfortuna/ng-guess</a>.</p>
 
-<p>If you'd like to get in touch, my email is <a href='mailto:adam@fortuna.name'>adam@fortuna.name</a>.
-
+    <p>If you'd like to get in touch, my email is <a href='mailto:adam@fortuna.name'>adam@fortuna.name</a>.
+  </div>
+</div>
 
 <footer class='row footer'>
-  <div class='col-ls-offset-2 col-ls-7 footer--list'>
+  <div class='col-lg-7 col-lg-offset-2 footer--list'>
+    <ul class='list-inline pull-right' ng-show='ctrl.auth'>
+      <li><a class='footer--link' href='' ng-href='#/' ng-click='ctrl.logout()'>Logout</a></li>
+    </ul>
     <ul class='list-inline'>
       <li><a class='footer--link' href='' ng-href='#/'>Home</a></li>
       <li><a class='footer--link' href='' ng-href='#/about'>About</a></li>

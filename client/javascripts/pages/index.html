@@ -1,39 +1,41 @@
-<div ng-hide='ctrl.auth'>
-  <div class='chart--wrapper'>
-    <p class='chart--teaser  text-center'>
-      <button class='btn btn-lg btn-block btn-social btn-github' ng-click='ctrl.login()'>
-        <span class="fa fa-github"></span> Sign in with GitHub to make your guess<br/> and see all <b>{{ctrl.guesses.length}}</b> guesses
-      </button>
-    </p>
-    <gs-distribution-chart class='blurry' guesses='ctrl.guesses' ng-if='ctrl.guesses.length > 0'></gs-distribution-chart>
-  </div>
-</div>
+<div class='row'>
+  <div class='col-lg-offset-2 col-lg-7'>
 
-<div ng-if='ctrl.auth'>
-  <div ng-if='ctrl.user'>
-    <gs-date user='ctrl.user'></gs-date>
-  </div>
-
-  <div ng-if='ctrl.guessMade()'>
-    <div class='guess--overview row' ng-if='ctrl.guesses.length > 0'>
-      <gs-average class='col-md-5 col-md-offset-3' guesses='ctrl.guesses'></gs-average>
+    <div ng-hide='ctrl.auth'>
+      <div class='chart--wrapper'>
+        <p class='chart--teaser  text-center'>
+          <button class='btn btn-lg btn-block btn-social btn-github' ng-click='ctrl.login()'>
+            <span class="fa fa-github"></span> Sign in with GitHub to make your<br/>guess and see all <b>{{ctrl.guesses.length}}</b> guesses
+          </button>
+        </p>
+        <gs-distribution-chart class='blurry' animate='false' guesses='ctrl.guesses' ng-if='ctrl.guesses.length > 0'></gs-distribution-chart>
+      </div>
     </div>
 
-    <gs-distribution-chart guesses='ctrl.guesses' guessDate='ctrl.user.guessDate' ng-if='ctrl.guesses.length > 0' ></gs-distribution-chart>
+    <div ng-if='ctrl.auth'>
+      <div ng-if='ctrl.user.updated_at'>
+        <gs-date user='ctrl.user'></gs-date>
+      </div>
+
+      <div ng-if='ctrl.guessMade()'>
+        <div class='guess--overview row' ng-if='ctrl.guesses.length > 0'>
+          <gs-average class='col-md-5 col-md-offset-3' guesses='ctrl.guesses'></gs-average>
+        </div>
+
+        <gs-distribution-chart guesses='ctrl.guesses' animate='true' guessDate='ctrl.user.guessDate' ng-if='ctrl.guesses.length > 0' ></gs-distribution-chart>
+      </div>
+    </div>
   </div>
 </div>
 
-
 <footer class='row footer'>
-  <div class='col-ls-offset-2 col-ls-7 footer--list'>
+  <div class='col-lg-7 col-lg-offset-2 footer--list'>
+    <ul class='list-inline pull-right' ng-show='ctrl.auth'>
+      <li><a class='footer--link' href='' ng-href='#/' ng-click='ctrl.logout()'>Logout</a></li>
+    </ul>
     <ul class='list-inline'>
       <li><a class='footer--link' href='' ng-href='#/'>Home</a></li>
       <li><a class='footer--link' href='' ng-href='#/about'>About</a></li>
-      <li class='pull-right'>
-        <a ng-if='ctrl.auth' class='logout--button btn btn-sm btn-social btn-github' ng-click='ctrl.logout()'>
-          <span class="fa fa-github"></span> Logout
-        </a>
-      </li>
     </ul>
   </div>
 </footer>

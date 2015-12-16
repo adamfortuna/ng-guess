@@ -6,6 +6,7 @@
 'use strict';
 
 function GuessController(AuthService) {
+  var self = this;
   this.guessChanged = function(e) {
     var date;
     e.preventDefault();
@@ -14,7 +15,7 @@ function GuessController(AuthService) {
     } else {
       date = null;
     }
-
+    self.user.guessDate = date;
     AuthService.user.ref.child('guessDate').set(date);
   };
 }
@@ -29,13 +30,17 @@ function DateDirective() {
     controllerAs: 'ctrl',
     bindToController: true,
     link: function(scope, el, attrs, ctrl) {
-      console.log('pickadate');
       var input = $(el[0]).find('input');
+      var guessAsDate = new Date(ctrl.user.guessDate);
       input.pickadate({
         hiddenName: true,
-        min: new Date(),
-        format: 'mmmm d, yyyy'
+        min: new Date()
       });
+
+      if(ctrl.user.guessDate) {
+        var picker = input.pickadate('picker');
+        picker.set('select', guessAsDate);
+      }
 
       input.on('change', ctrl.guessChanged);
     }
