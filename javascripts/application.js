@@ -47,6 +47,61 @@ angular.module(window.appName).config(routes);
 /*eslint no-console: 0*/
 /*eslint no-debugger: 0*/
 
+// ng-model='ctrl.user.guessDate' ng-change='ctrl.guessChanged()'
+(function() {
+'use strict';
+
+function GuessController(AuthService) {
+  var self = this;
+  this.guessChanged = function(e) {
+    var date;
+    e.preventDefault();
+    if($(this).val()) {
+      date = new Date($(this).val()).getTime();
+    } else {
+      date = null;
+    }
+    self.user.guessDate = date;
+    AuthService.user.ref.child('guessDate').set(date);
+  };
+}
+
+function DateDirective() {
+  return {
+    replace: true,
+    restrict: 'E',
+    scope: { user: '=' },
+    templateUrl: 'guess/date.html',
+    controller: GuessController,
+    controllerAs: 'ctrl',
+    bindToController: true,
+    link: function(scope, el, attrs, ctrl) {
+      var input = $(el[0]).find('input');
+      var guessAsDate = new Date(ctrl.user.guessDate);
+      input.pickadate({
+        hiddenName: true,
+        min: new Date()
+      });
+
+      if(ctrl.user.guessDate) {
+        var picker = input.pickadate('picker');
+        picker.set('select', guessAsDate);
+      }
+
+      input.on('change', ctrl.guessChanged);
+    }
+  };
+}
+
+angular.module(window.appName)
+.directive('gsDate', DateDirective);
+
+
+}());
+
+/*eslint no-console: 0*/
+/*eslint no-debugger: 0*/
+
 (function() {
 'use strict';
 
@@ -76,8 +131,8 @@ function IndexController(_, AuthService, UserFactory, currentUser, FIREBASE_URL)
 
   self.guessMade = function() {
     if(self.user) {
-      var guessMade = !_.isUndefined(self.user.guessDate) && self.user.guessDate;
-      return guessMade;
+      var noGuessMade = _.isUndefined(self.user.guessDate) || _.isNull(self.user.guessDate);
+      return !noGuessMade;
     } else {
       return false;
     }
@@ -124,56 +179,6 @@ angular.module(window.appName)
 /*eslint no-console: 0*/
 /*eslint no-debugger: 0*/
 
-// ng-model='ctrl.user.guessDate' ng-change='ctrl.guessChanged()'
-(function() {
-'use strict';
-
-function GuessController(AuthService) {
-  this.guessChanged = function(e) {
-    var date;
-    e.preventDefault();
-    if($(this).val()) {
-      date = new Date($(this).val()).getTime();
-    } else {
-      date = null;
-    }
-
-    AuthService.user.ref.child('guessDate').set(date);
-  };
-}
-
-function DateDirective() {
-  return {
-    replace: true,
-    restrict: 'E',
-    scope: { user: '=' },
-    templateUrl: 'guess/date.html',
-    controller: GuessController,
-    controllerAs: 'ctrl',
-    bindToController: true,
-    link: function(scope, el, attrs, ctrl) {
-      console.log('pickadate');
-      var input = $(el[0]).find('input');
-      input.pickadate({
-        hiddenName: true,
-        min: new Date(),
-        format: 'mmmm d, yyyy'
-      });
-
-      input.on('change', ctrl.guessChanged);
-    }
-  };
-}
-
-angular.module(window.appName)
-.directive('gsDate', DateDirective);
-
-
-}());
-
-/*eslint no-console: 0*/
-/*eslint no-debugger: 0*/
-
 (function() {
 'use strict';
 
@@ -209,198 +214,199 @@ angular.module(window.appName)
 (function() {
 'use strict';
 
-function DistributionChartController() {
-  this.generateDates = function() {
-    var dates = [];
-    for (var i = 0; i < 1000; i++) {
-      var daysFromNow = self.normal() * 200,
-        future = new Date();
-      future.setDate(future.getDate() + 200 + daysFromNow);
-      dates.push(future);
+function DistributionChartController(d3, $scope) {
+  var self = this;
+  this.margin = {
+      top: 10,
+      right: 25,
+      bottom: 30,
+      left: 25
+    };
+  this.updateDuration = 500;
+  this.width = 660 - this.margin.left - this.margin.right;
+  this.height = 400 - this.margin.top - this.margin.bottom;
+  this.monthFormat = d3.time.format("%Y-%m");
+  this.dayFormat = d3.time.format("%B %e, %Y");
+
+  $scope.$watch('ctrl.guesses', function(data) {
+    if(self.isWatching) {
+      self.update(data);
     }
-    return dates.sort(this.sortByDateAscending);
-  };
+  });
 
-  this.normal = function() {
-    var nsamples = 6, sigma = 1, mu = 0;
-
-    var runTotal = 0;
-    for (var i = 0; i < nsamples; i++) {
-      runTotal += Math.random();
-    }
-
-    var normal = sigma * (runTotal - nsamples / 2) / (nsamples / 2) + mu;
-    return normal;
-  };
-
-  this.getSundayFromWeek = function(week) {
-    var tokens = week.split('-'),
-      year = tokens[0],
-      weekNum = tokens[1];
-
-    var sunday = new Date(year, 0, (1 + (weekNum - 1) * 7));
-    while (sunday.getDay() !== 0) {
-      sunday.setDate(sunday.getDate() - 1);
-    }
-    return sunday;
-  };
-
-  // Dates will be cast to numbers automagically
   this.sortByDateAscending = function(a, b) {
     return a - b;
   };
-}
 
+  this.timeForKey = function(key) {
+    var t = key.split('-');
+    return new Date(t[0], t[1], 1);
+  };
 
+  this.parseData = function(data) {
+    var dates = data.sort(data, this.sortByDateAscending);
+    return d3.nest().key(function(d) {
+      return self.monthFormat(new Date(d));
+    }).entries(dates);
+  };
 
-function DistributionChartDirective(d3) {
-  return {
-    replace: true,
-    restrict: 'E',
-    scope: {
-      guesses: '=',
-      guessDate: '='
-    },
-    template: '<div><p>guess: {{ctrl.guessDate}}</p></div>',
-    controller: DistributionChartController,
-    controllerAs: 'ctrl',
-    bindToController: true,
-    link: function(scope, el, attrs, ctrl) {
-      el.empty();
+  this.update = function(rawData) {
+    if(this.svg) {
+      var data = this.parseData(rawData);
+      this.updateScales(data);
+      this.updateAxis(data);
+      this.updateLine(data);
+      this.updateMeanLine(rawData);
+    }
+  };
 
-      var dates = ctrl.guesses.sort(ctrl.guesses, ctrl.sortByDateAscending),
-        mean = new Date(d3.mean(dates)),
-        week = d3.time.format("%Y-%U"),
-        fullDay = d3.time.format("%B %e, %Y"),
-        data = d3.nest().key(function(d) {
-          return week(new Date(d));
-        }).entries(dates);
+  this.updateScales = function(data) {
+    this.x.domain(d3.extent(data, function(d) {
+      return self.timeForKey(d.key);
+    }));
+    this.y.domain(d3.extent(data, function(d) {
+      return d.values.length;
+    }));
+  };
 
-      var margin = {
-          top: 10,
-          right: 25,
-          bottom: 30,
-          left: 25
-        },
-        width = 660 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
+  // Update the X-axis
+  this.updateAxis = function(data) {
+    this.xAxis = d3.svg.axis()
+      .scale(this.x)
+      .orient('bottom')
+      .tickFormat(d3.time.format('%B'))
+      .ticks(data.length);
 
-      var x = d3.time.scale()
-        .range([0, width])
-        .domain(d3.extent(data, function(d) {
-          return ctrl.getSundayFromWeek(d.key);
-        }));
+    this.xAxisElement.call(this.xAxis);
+  };
 
-      var y = d3.scale.linear()
-        .range([height, 0])
-        .domain(d3.extent(data, function(d) {
-          return d.values.length;
-        }));
+  this.updateLine = function(data) {
+    this.path.datum(data)
+      .transition()
+        .duration(this.updateDuration)
+      .attr('d', this.line);
+  };
 
-      var xAxis = d3.svg.axis()
-        .scale(x)
-        .orient("bottom")
-        .tickFormat(d3.time.format('%B'));
+  this.updateMeanLine = function(data) {
+    var mean = new Date(d3.mean(data));
 
-      var line = d3.svg.line()
-        .interpolate('cardinal') // or basis
-        .x(function(d) {
-          return x(ctrl.getSundayFromWeek(d.key));
-        })
-        .y(function(d) {
-          return y(d.values.length);
-        });
-
-      var svg = d3.select(el[0]).append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-      svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(xAxis);
-
-
-
-
-
-      var path = svg.append("path")
-        .datum(data)
-        .attr("class", "line")
-        .attr("d", line);
-
-      // Add an animation
-      var totalLength = path.node().getTotalLength();
-      path.attr("stroke-dasharray", totalLength + " " + totalLength)
-        .attr("stroke-dashoffset", totalLength)
-        .transition()
-        .duration(1500)
-        .ease("linear")
-        .attr("stroke-dashoffset", 0);
-
-
-
-
-      // Median Line
-      var medianGroup = svg.append("g")
+    if(!this.medianGroup) {
+      this.medianGroup = this.svg.append("g")
         .attr('class', 'date--group')
-        .attr("transform", "translate(" + x(mean) + "," + 0 + ")");
+        .attr("transform", "translate(" + this.x(mean) + "," + 0 + ")");
+    } else {
+      this.medianGroup.transition()
+            .duration(this.updateDuration * 2)
+            .ease("linear")
+          .attr("transform", "translate(" + this.x(mean) + "," + 0 + ")");
+    }
+
+    if(!this.meanLine) {
       // Add the mean line
-      medianGroup.append('line')
+      this.meanLine = this.medianGroup.append('line')
         .attr('class', 'date--line')
         .attr("x1", 0)
         .attr("y1", 0)
         .attr("x2", 0)
-        .attr("y2", height)
+        .attr("y2", this.height)
         .attr("stroke-width", 2)
         .attr("stroke", "black");
       // Add a box
-      medianGroup.append("rect")
+      this.medianGroup.append("rect")
          .attr('class', 'date--background')
          .attr('x', 0)
          .attr('height', 30)
          .attr('width', 200);
       // Add text for the line
-      medianGroup.append("text")
+      this.meanText = this.medianGroup.append("text")
         .attr('class', 'date--text')
         .attr("y", 10)
         .attr('x', 10)
         .attr("dy", ".71em")
-        .style("text-anchor", "begin")
-        .text('Our Guess: ' + fullDay(mean));
+        .style("text-anchor", "begin");
+    }
+    this.meanText.text('Our Guess: ' + this.dayFormat(mean));
+  };
+
+  this.startChart = function() {
+    var data = this.parseData(this.guesses);
+
+    this.x = d3.time.scale().range([0, this.width]);
+    this.y = d3.scale.linear().range([this.height, 0]);
+    this.updateScales(data);
+    this.xAxis = d3.svg.axis()
+      .scale(this.x)
+      .orient('bottom')
+      .tickFormat(d3.time.format('%B'))
+      .ticks(data.length);
 
 
-      // Guess Line
-      if(ctrl.guessDate) {
-        var guessGroup = svg.append("g")
-          .attr('class', 'date--group')
-          .attr("transform", "translate(" + x(ctrl.guessDate) + "," + 0 + ")");
-        // Add the mean line
-        guessGroup.append('line')
-          .attr('class', 'date--line')
-          .attr("x1", 0)
-          .attr("y1", 0)
-          .attr("x2", 0)
-          .attr("y2", height)
-          .attr("stroke-width", 2)
-          .attr("stroke", "black");
-        // Add a box
-        guessGroup.append("rect")
-           .attr('class', 'date--background')
-           .attr('x', -160)
-           .attr('height', 30)
-           .attr('width', 160);
-        // Add text for the line
-        guessGroup.append("text")
-          .attr('class', 'date--text')
-          .attr("y", 10)
-          .attr('x', -10)
-          .attr("dy", ".71em")
-          .style("text-anchor", "end")
-          .text('Your Guess: ' + fullDay(ctrl.guessDate));
-      }
+    // Draw main svg container
+    this.svg = d3.select(this.el[0]).append("svg")
+      .attr("width", this.width + this.margin.left + this.margin.right)
+      .attr("height", this.height + this.margin.top + this.margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+
+    // Draw X-axis
+    this.xAxisElement = this.svg.append('g')
+      .attr('class', 'x axis x-axis')
+      .attr('transform', 'translate(0,' + this.height + ')')
+      .call(this.xAxis);
+
+    // Draw Main Line
+    this.line = d3.svg.line()
+      .interpolate('cardinal') // or basis
+      .x(function(d) {
+        return self.x(self.timeForKey(d.key));
+      })
+      .y(function(d) {
+        return self.y(d.values.length);
+      });
+
+    this.path = this.svg.append('path')
+      .datum(data)
+      .attr('class', 'line')
+      .attr('d', this.line);
+    // Add an animation to main line
+    if(this.animate) {
+      var totalLength = this.path.node().getTotalLength();
+      this.path.attr("stroke-dasharray", totalLength + " " + totalLength)
+        .attr("stroke-dashoffset", totalLength)
+        .transition()
+        .duration(1500)
+        .ease("linear")
+        .attr("stroke-dashoffset", 0);
+    }
+
+    // Draw Median Line
+    this.updateMeanLine(this.guesses);
+
+    setTimeout(function() {
+      self.isWatching = true;
+    }, 3000);
+  };
+}
+
+
+
+function DistributionChartDirective() {
+  return {
+    replace: true,
+    restrict: 'E',
+    scope: {
+      guesses: '=',
+      guessDate: '=',
+      animate: '='
+    },
+    template: '<div></div>',
+    controller: DistributionChartController,
+    controllerAs: 'ctrl',
+    bindToController: true,
+    link: function(scope, el, attrs, ctrl) {
+      el.empty();
+      ctrl.el = el;
+      ctrl.startChart();
     }
   };
 }
@@ -496,7 +502,11 @@ function UserFactory($firebaseObject, $firebaseArray, FIREBASE_URL) {
       var changed = $firebaseObject.prototype.$$updated.apply(this, arguments);
 
       if(changed) {
-        this.guessDate = new Date(this.guessDate || new Date());
+        if(this.guessDate) {
+          this.guessDate = new Date(this.guessDate);
+        } else {
+          this.guessDate = null;
+        }
       }
 
       return changed;

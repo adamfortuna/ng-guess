@@ -4915,18 +4915,23 @@ text {
 
 .line {
   fill: none;
-  stroke: steelblue;
-  stroke-width: 4px; }
+  stroke: #0179db;
+  stroke-width: 4px;
+  opacity: 0.2; }
 
 .date--line {
-  stroke: #ccc;
+  stroke: #0179db;
   stroke-width: 1px; }
 
 .date--text {
   fill: #000; }
 
 .date--background {
-  fill: #000;
+  fill: #027ddf;
+  opacity: 0.2; }
+
+.guess--background {
+  fill: red;
   opacity: 0.2; }
 
 .picker, .picker__holder {
@@ -5239,8 +5244,7 @@ a {
   filter: blur(8px); }
 
 .guess--wrapper label {
-  font-size: 1.8em;
-  font-color: #333; }
+  font-size: 0.8em; }
 
 .guess--date {
   font-size: 1.8em;
@@ -5248,10 +5252,11 @@ a {
   border: 0.0625rem solid #e5e5e5;
   border-radius: 4px;
   width: 100%;
-  padding: 8px; }
+  padding: 8px;
+  margin-bottom: 1em; }
 
 .guess--overview {
-  margin-top: 2em; }
+  margin: 2em 0; }
 
 .chart--wrapper {
   position: relative;
@@ -5261,9 +5266,15 @@ a {
     z-index: 1;
     top: 150px;
     left: 180px; }
+    .chart--wrapper .chart--teaser .fa-github {
+      margin-top: 16px; }
+    .chart--wrapper .chart--teaser button {
+      text-align: center; }
 
 .footer {
-  margin: 4em 0 2em; }
+  clear: both;
+  margin: 4em 0 2em;
+  padding: 4em 0; }
   .footer .footer--list {
     border-top: 1px solid #ddd; }
   .footer ul {
