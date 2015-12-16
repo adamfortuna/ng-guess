@@ -4934,6 +4934,14 @@ text {
   fill: #027ddf;
   opacity: 0.2; }
 
+.overlay {
+  fill: none;
+  pointer-events: all; }
+
+.focus circle {
+  fill: none;
+  stroke: steelblue; }
+
 .picker, .picker__holder {
   width: 100%;
   position: absolute; }
