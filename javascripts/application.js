@@ -47,55 +47,122 @@ angular.module(window.appName).config(routes);
 /*eslint no-console: 0*/
 /*eslint no-debugger: 0*/
 
-// ng-model='ctrl.user.guessDate' ng-change='ctrl.guessChanged()'
 (function() {
 'use strict';
 
-function GuessController(AuthService) {
-  var self = this;
-  this.guessChanged = function(e) {
-    var date;
-    e.preventDefault();
-    if($(this).val()) {
-      date = new Date($(this).val()).getTime();
-    } else {
-      date = null;
-    }
-    self.user.guessDate = date;
-    AuthService.user.ref.child('guessDate').set(date);
+function AuthService($rootScope, $firebaseAuth, FIREBASE_URL, UserFactory) {
+  var fb = new Firebase(FIREBASE_URL),
+      usersRef = new Firebase(FIREBASE_URL + 'users');
+  var firebaseAuthObject = $firebaseAuth(fb);
+  var service = {
+    user: {}
   };
+
+  ////////////
+
+  function setUser(auth) {
+    service.user.auth = auth;
+
+    if(auth) {
+      service.user.current = UserFactory.new(auth.uid);
+      service.user.ref = usersRef.child(auth.uid);
+      service.user.ref.child('updated_at').set(Firebase.ServerValue.TIMESTAMP);
+      var details = {
+        id: auth.github.id,
+        displayName: auth.github.displayName,
+        username: auth.github.username,
+        profileImageURL: auth.github.profileImageURL
+      };
+      service.user.ref.child('auth').set(details);
+    } else {
+      service.user.current = null;
+      service.user.ref = null;
+    }
+  }
+
+  function login() {
+    return firebaseAuthObject.$authWithOAuthPopup('github');
+  }
+
+  function logout() {
+    $rootScope.$broadcast('logout');
+    firebaseAuthObject.$unauth();
+    setUser(null);
+  }
+
+  service.setUser = setUser;
+  service.firebaseAuthObject = firebaseAuthObject;
+  service.prepareAuthentication = firebaseAuthObject.$waitForAuth;
+  service.login = login;
+  service.logout = logout;
+  service.$onAuth = firebaseAuthObject.$onAuth;
+
+  firebaseAuthObject.$onAuth(function(auth) {
+    service.user.auth = auth;
+    if(auth) {
+      setUser(auth);
+    }
+  });
+
+  return service;
 }
 
-function DateDirective() {
-  return {
-    replace: true,
-    restrict: 'E',
-    scope: { user: '=' },
-    templateUrl: 'guess/date.html',
-    controller: GuessController,
-    controllerAs: 'ctrl',
-    bindToController: true,
-    link: function(scope, el, attrs, ctrl) {
-      var input = $(el[0]).find('input');
-      var guessAsDate = new Date(ctrl.user.guessDate);
-      input.pickadate({
-        hiddenName: true,
-        min: new Date()
-      });
+AuthService.$inject = ['$rootScope', '$firebaseAuth', 'FIREBASE_URL', 'UserFactory'];
 
-      if(ctrl.user.guessDate) {
-        var picker = input.pickadate('picker');
-        picker.set('select', guessAsDate);
+angular.module(window.appName).factory('AuthService', AuthService);
+
+}());
+
+/*eslint no-console: 0*/
+/*eslint no-debugger: 0*/
+
+
+(function() {
+'use strict';
+
+function UserFactory($firebaseObject, $firebaseArray, FIREBASE_URL) {
+  var users = new Firebase(FIREBASE_URL + 'users'),
+      all = $firebaseArray(users);
+
+  var User = $firebaseObject.$extend({
+
+    $$updated: function () {
+      // call the super
+      var changed = $firebaseObject.prototype.$$updated.apply(this, arguments);
+
+      if(changed) {
+        if(this.guessDate) {
+          this.guessDate = new Date(this.guessDate);
+        } else {
+          this.guessDate = null;
+        }
       }
 
-      input.on('change', ctrl.guessChanged);
+      return changed;
+    },
+
+    toJSON: function() {
+      return angular.extend({}, this, {
+        guessDate: this.guessDate ? this.guessDate.getTime() : null
+      });
     }
+
+  });
+
+  function newUser(userId) {
+    var ref = users.child(userId);
+    return new User(ref);
+  }
+
+  return {
+    new: newUser,
+    all: all
   };
 }
 
-angular.module(window.appName)
-.directive('gsDate', DateDirective);
+UserFactory.$inject = ['$firebaseObject', '$firebaseArray', 'FIREBASE_URL'];
 
+angular.module(window.appName).factory('UserFactory', UserFactory);
 
 }());
 
@@ -179,6 +246,61 @@ angular.module(window.appName)
 /*eslint no-console: 0*/
 /*eslint no-debugger: 0*/
 
+// ng-model='ctrl.user.guessDate' ng-change='ctrl.guessChanged()'
+(function() {
+'use strict';
+
+function GuessController(AuthService) {
+  var self = this;
+  this.guessChanged = function(e) {
+    var date;
+    e.preventDefault();
+    if($(this).val()) {
+      date = new Date($(this).val()).getTime();
+    } else {
+      date = null;
+    }
+    self.user.guessDate = date;
+    AuthService.user.ref.child('guessDate').set(date);
+  };
+}
+
+function DateDirective() {
+  return {
+    replace: true,
+    restrict: 'E',
+    scope: { user: '=' },
+    templateUrl: 'guess/date.html',
+    controller: GuessController,
+    controllerAs: 'ctrl',
+    bindToController: true,
+    link: function(scope, el, attrs, ctrl) {
+      var input = $(el[0]).find('input');
+      var guessAsDate = new Date(ctrl.user.guessDate);
+      input.pickadate({
+        hiddenName: true,
+        min: new Date()
+      });
+
+      if(ctrl.user.guessDate) {
+        var picker = input.pickadate('picker');
+        picker.set('select', guessAsDate);
+      }
+
+      input.on('change', ctrl.guessChanged);
+    }
+  };
+}
+
+angular.module(window.appName)
+.directive('gsDate', DateDirective);
+
+
+}());
+
+/*eslint no-console: 0*/
+/*eslint no-debugger: 0*/
+
 (function() {
 'use strict';
 
@@ -245,9 +367,39 @@ function DistributionChartController(d3, $scope) {
 
   this.parseData = function(data) {
     var dates = data.sort(data, this.sortByDateAscending);
-    return d3.nest().key(function(d) {
+    var updatedData = d3.nest().key(function(d) {
       return self.monthFormat(new Date(d));
     }).entries(dates);
+
+    var now = new Date(),
+        year = now.getFullYear(),
+        month = now.getMonth(),
+        key = year + '-' + month;
+    if(updatedData[0].key !== key) {
+      updatedData.unshift({
+        key: key,
+        values: []
+      });
+    }
+
+    var lastItem = updatedData[updatedData.length - 1],
+        lastTokens = lastItem.key.split('-'),
+        lastYear = lastTokens[0],
+        lastMonth = lastTokens[1],
+        nextMonth = +lastMonth + 1,
+        nextYear = lastYear;
+
+    if(nextMonth > 12) {
+      nextMonth = 1;
+      nextYear++;
+    }
+
+    updatedData.push({
+      key: nextYear + '-' + nextMonth,
+      values: []
+    });
+
+    return updatedData;
   };
 
   this.update = function(rawData) {
@@ -432,17 +584,17 @@ function DistributionTableController(d3, $scope) {
 
   this.key = function key(month) {
     return month.key;
-  }
+  };
 
   this.update = function(data) {
     // Create a <tr> for each month
     var rows = this.tbody.selectAll('tr')
-        .data(data, this.key)
+        .data(data, this.key);
     rows.exit().remove();
     rows.enter().append('tr');
 
     // create a cell in each row for each column
-    var cells = rows.selectAll("td")
+    rows.selectAll("td")
         .data(function(row) {
             return columns.map(function(column) {
                 return {column: column, value: row};
@@ -456,8 +608,8 @@ function DistributionTableController(d3, $scope) {
               } else {
                 return d.value.values.length;
               }
-            })
-  }
+            });
+  };
 
   this.parseData = function(data) {
     var dates = data.sort(data, this.sortByDateAscending);
@@ -484,7 +636,7 @@ function DistributionTableController(d3, $scope) {
 
 
     this.update(data);
-  }
+  };
 }
 
 
@@ -509,128 +661,6 @@ function DistributionTableDirective() {
 
 angular.module(window.appName)
        .directive('gsDistributionTable', DistributionTableDirective);
-}());
-
-/*eslint no-console: 0*/
-/*eslint no-debugger: 0*/
-
-(function() {
-'use strict';
-
-function AuthService($rootScope, $firebaseAuth, FIREBASE_URL, UserFactory) {
-  var fb = new Firebase(FIREBASE_URL),
-      usersRef = new Firebase(FIREBASE_URL + 'users');
-  var firebaseAuthObject = $firebaseAuth(fb);
-  var service = {
-    user: {}
-  };
-
-  ////////////
-
-  function setUser(auth) {
-    service.user.auth = auth;
-
-    if(auth) {
-      service.user.current = UserFactory.new(auth.uid);
-      service.user.ref = usersRef.child(auth.uid);
-      service.user.ref.child('updated_at').set(Firebase.ServerValue.TIMESTAMP);
-      var details = {
-        id: auth.github.id,
-        displayName: auth.github.displayName,
-        username: auth.github.username,
-        profileImageURL: auth.github.profileImageURL
-      };
-      service.user.ref.child('auth').set(details);
-    } else {
-      service.user.current = null;
-      service.user.ref = null;
-    }
-  }
-
-  function login() {
-    return firebaseAuthObject.$authWithOAuthPopup('github');
-  }
-
-  function logout() {
-    $rootScope.$broadcast('logout');
-    firebaseAuthObject.$unauth();
-    setUser(null);
-  }
-
-  service.setUser = setUser;
-  service.firebaseAuthObject = firebaseAuthObject;
-  service.prepareAuthentication = firebaseAuthObject.$waitForAuth;
-  service.login = login;
-  service.logout = logout;
-  service.$onAuth = firebaseAuthObject.$onAuth;
-
-  firebaseAuthObject.$onAuth(function(auth) {
-    service.user.auth = auth;
-    if(auth) {
-      setUser(auth);
-    }
-  });
-
-  return service;
-}
-
-AuthService.$inject = ['$rootScope', '$firebaseAuth', 'FIREBASE_URL', 'UserFactory'];
-
-angular.module(window.appName).factory('AuthService', AuthService);
-
-}());
-
-/*eslint no-console: 0*/
-/*eslint no-debugger: 0*/
-
-
-(function() {
-'use strict';
-
-function UserFactory($firebaseObject, $firebaseArray, FIREBASE_URL) {
-  var users = new Firebase(FIREBASE_URL + 'users'),
-      all = $firebaseArray(users);
-
-  var User = $firebaseObject.$extend({
-
-    $$updated: function () {
-      // call the super
-      var changed = $firebaseObject.prototype.$$updated.apply(this, arguments);
-
-      if(changed) {
-        if(this.guessDate) {
-          this.guessDate = new Date(this.guessDate);
-        } else {
-          this.guessDate = null;
-        }
-      }
-
-      return changed;
-    },
-
-    toJSON: function() {
-      return angular.extend({}, this, {
-        guessDate: this.guessDate ? this.guessDate.getTime() : null
-      });
-    }
-
-  });
-
-  function newUser(userId) {
-    var ref = users.child(userId);
-    return new User(ref);
-  }
-
-  return {
-    new: newUser,
-    all: all
-  };
-}
-
-UserFactory.$inject = ['$firebaseObject', '$firebaseArray', 'FIREBASE_URL'];
-
-angular.module(window.appName).factory('UserFactory', UserFactory);
-
 }());
 
 (function() {
