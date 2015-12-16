@@ -35,9 +35,39 @@ function DistributionChartController(d3, $scope) {
 
   this.parseData = function(data) {
     var dates = data.sort(data, this.sortByDateAscending);
-    return d3.nest().key(function(d) {
+    var updatedData = d3.nest().key(function(d) {
       return self.monthFormat(new Date(d));
     }).entries(dates);
+
+    var now = new Date(),
+        year = now.getFullYear(),
+        month = now.getMonth(),
+        key = year + '-' + month;
+    if(updatedData[0].key !== key) {
+      updatedData.unshift({
+        key: key,
+        values: []
+      });
+    }
+
+    var lastItem = updatedData[updatedData.length - 1],
+        lastTokens = lastItem.key.split('-'),
+        lastYear = lastTokens[0],
+        lastMonth = lastTokens[1],
+        nextMonth = +lastMonth + 1,
+        nextYear = lastYear;
+
+    if(nextMonth > 12) {
+      nextMonth = 1;
+      nextYear++;
+    }
+
+    updatedData.push({
+      key: nextYear + '-' + nextMonth,
+      values: []
+    });
+
+    return updatedData;
   };
 
   this.update = function(rawData) {

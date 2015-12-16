@@ -15,17 +15,17 @@ function DistributionTableController(d3, $scope) {
 
   this.key = function key(month) {
     return month.key;
-  }
+  };
 
   this.update = function(data) {
     // Create a <tr> for each month
     var rows = this.tbody.selectAll('tr')
-        .data(data, this.key)
+        .data(data, this.key);
     rows.exit().remove();
     rows.enter().append('tr');
 
     // create a cell in each row for each column
-    var cells = rows.selectAll("td")
+    rows.selectAll("td")
         .data(function(row) {
             return columns.map(function(column) {
                 return {column: column, value: row};
@@ -39,8 +39,8 @@ function DistributionTableController(d3, $scope) {
               } else {
                 return d.value.values.length;
               }
-            })
-  }
+            });
+  };
 
   this.parseData = function(data) {
     var dates = data.sort(data, this.sortByDateAscending);
@@ -67,7 +67,7 @@ function DistributionTableController(d3, $scope) {
 
 
     this.update(data);
-  }
+  };
 }
 
 
