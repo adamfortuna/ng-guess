@@ -5297,7 +5297,7 @@ a {
 .gs-distribution-table {
   margin-top: 2em;
   padding-top: 1em; }
-  .gs-distribution-table h3 {
+  .gs-distribution-table h2 {
     margin-bottom: 1em; }
   .gs-distribution-table table {
     width: 300px;
@@ -5306,3 +5306,11 @@ a {
       background-color: #e1f2ff; }
     .gs-distribution-table table td, .gs-distribution-table table th {
       padding: 8px; }
+
+.learn-angular {
+  margin-top: 2em; }
+  .learn-angular h2 {
+    margin: 2em 0; }
+  .learn-angular img {
+    max-width: 350px;
+    padding: 20px; }
