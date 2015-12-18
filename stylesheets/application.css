@@ -5776,5 +5776,10 @@ a {
   .learn-angular h2 {
     margin: 2em 0; }
   .learn-angular img {
-    max-width: 350px;
+    max-width: 100%;
     padding: 20px; }
+
+.share--hackernews,
+.share--twitter {
+  position: relative;
+  top: 6px; }
