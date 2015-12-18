@@ -1,4 +1,16 @@
 <div class='distribution--table'>
   <h2 class='text-center'>Guesses By Month</h2>
 
+  <table>
+    <thead>
+      <th>Month</th>
+      <th>Count</th>
+    </thead>
+    <tbody>
+      <tr ng-repeat='date in ctrl.dates'>
+        <td>{{date.key}}</td>
+        <td>{{date.values.length}}</td>
+      </tr>
+    </tbody>
+  </table>
 </div>

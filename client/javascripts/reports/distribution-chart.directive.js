@@ -161,6 +161,7 @@ function DistributionChartController(_, d3, $scope) {
 
   this.updateMeanLine = function(data) {
     var mean = new Date(d3.median(data));
+    console.log('mean', mean);
 
     if(!this.medianGroup) {
       this.medianGroup = this.svg.append("g")

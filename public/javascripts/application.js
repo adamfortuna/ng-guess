@@ -371,6 +371,7 @@ function DistributionChartController(_, d3, $scope) {
 
   this.updateMeanLine = function(data) {
     var mean = new Date(d3.median(data));
+    console.log('mean', mean);
 
     if(!this.medianGroup) {
       this.medianGroup = this.svg.append("g")
@@ -537,41 +538,11 @@ angular.module(window.appName)
 
 function DistributionTableController(d3, $scope) {
   var self = this;
-  var columns = ['Month', 'Count'];
   this.monthFormat = d3.time.format("%Y-%m");
 
   $scope.$watch('ctrl.guesses', function(data) {
-    self.update(self.parseData(data));
+    self.dates = self.parseData(data);
   });
-
-  this.key = function key(month) {
-    return month.key;
-  };
-
-  this.update = function(data) {
-    // Create a <tr> for each month
-    var rows = this.tbody.selectAll('tr')
-        .data(data, this.key);
-    rows.exit().remove();
-    rows.enter().append('tr');
-
-    // create a cell in each row for each column
-    rows.selectAll("td")
-        .data(function(row) {
-            return columns.map(function(column) {
-                return {column: column, value: row};
-            });
-        })
-        .enter()
-        .append('td')
-            .html(function(d) {
-              if(d.column === 'Month') {
-                return d.value.key;
-              } else {
-                return d.value.values.length;
-              }
-            });
-  };
 
   this.parseData = function(data) {
     var dates = data.sort(data, this.sortByDateAscending);
@@ -580,25 +551,10 @@ function DistributionTableController(d3, $scope) {
     }).entries(dates);
   };
 
-  this.startTable = function() {
-    var data = this.parseData(this.guesses);
-
-
-    var table = d3.select(this.el[0]).append('table'),
-        thead = table.append('thead');
-    this.tbody = table.append('tbody');
-
-    // append the header row
-    thead.append("tr")
-         .selectAll("th")
-         .data(columns)
-         .enter()
-         .append("th")
-           .text(function(column) { return column; });
-
-
-    this.update(data);
+  this.sortByDateAscending = function(a, b) {
+    return a - b;
   };
+  self.dates = self.parseData(this.guesses);
 }
 
 
@@ -613,11 +569,7 @@ function DistributionTableDirective() {
     templateUrl: 'reports/distribution-table.html',
     controller: DistributionTableController,
     controllerAs: 'ctrl',
-    bindToController: true,
-    link: function(scope, el, attrs, ctrl) {
-      ctrl.el = el;
-      ctrl.startTable();
-    }
+    bindToController: true
   };
 }
 
