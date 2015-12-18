@@ -36,8 +36,7 @@ text {
 }
 
 .guess--background {
-  fill: #027ddf;
-  opacity: 0.2;
+  fill: lighten(#027ddf, 50%);
 }
 
 

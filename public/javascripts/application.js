@@ -182,6 +182,128 @@ angular.module(window.appName)
 (function() {
 'use strict';
 
+function AuthService($rootScope, $firebaseAuth, FIREBASE_URL, UserFactory) {
+  var fb = new Firebase(FIREBASE_URL),
+      usersRef = new Firebase(FIREBASE_URL + 'users');
+  var firebaseAuthObject = $firebaseAuth(fb);
+  var service = {
+    user: {}
+  };
+
+  ////////////
+
+  function setUser(auth) {
+    service.user.auth = auth;
+
+    if(auth) {
+      service.user.current = UserFactory.new(auth.uid);
+      service.user.ref = usersRef.child(auth.uid);
+      service.user.ref.child('updated_at').set(Firebase.ServerValue.TIMESTAMP);
+      var details = {
+        id: auth.github.id,
+        displayName: auth.github.displayName,
+        username: auth.github.username,
+        profileImageURL: auth.github.profileImageURL
+      };
+      service.user.ref.child('auth').set(details);
+    } else {
+      service.user.current = null;
+      service.user.ref = null;
+    }
+  }
+
+  function login() {
+    return firebaseAuthObject.$authWithOAuthPopup('github');
+  }
+
+  function logout() {
+    $rootScope.$broadcast('logout');
+    firebaseAuthObject.$unauth();
+    setUser(null);
+  }
+
+  service.setUser = setUser;
+  service.firebaseAuthObject = firebaseAuthObject;
+  service.prepareAuthentication = firebaseAuthObject.$waitForAuth;
+  service.login = login;
+  service.logout = logout;
+  service.$onAuth = firebaseAuthObject.$onAuth;
+
+  firebaseAuthObject.$onAuth(function(auth) {
+    service.user.auth = auth;
+    if(auth) {
+      setUser(auth);
+    }
+  });
+
+  return service;
+}
+
+AuthService.$inject = ['$rootScope', '$firebaseAuth', 'FIREBASE_URL', 'UserFactory'];
+
+angular.module(window.appName).factory('AuthService', AuthService);
+
+}());
+
+/*eslint no-console: 0*/
+/*eslint no-debugger: 0*/
+
+
+(function() {
+'use strict';
+
+function UserFactory($firebaseObject, $firebaseArray, FIREBASE_URL) {
+  var users = new Firebase(FIREBASE_URL + 'users'),
+      all = $firebaseArray(users);
+
+  var User = $firebaseObject.$extend({
+
+    $$updated: function () {
+      // call the super
+      var changed = $firebaseObject.prototype.$$updated.apply(this, arguments);
+
+      if(changed) {
+        if(this.guessDate) {
+          this.guessDate = new Date(this.guessDate);
+        } else {
+          this.guessDate = null;
+        }
+      }
+
+      return changed;
+    },
+
+    toJSON: function() {
+      return angular.extend({}, this, {
+        guessDate: this.guessDate ? this.guessDate.getTime() : null
+      });
+    }
+
+  });
+
+  function newUser(userId) {
+    var ref = users.child(userId);
+    return new User(ref);
+  }
+
+  return {
+    new: newUser,
+    all: all
+  };
+}
+
+UserFactory.$inject = ['$firebaseObject', '$firebaseArray', 'FIREBASE_URL'];
+
+angular.module(window.appName).factory('UserFactory', UserFactory);
+
+}());
+
+/*eslint no-console: 0*/
+/*eslint no-debugger: 0*/
+
+(function() {
+'use strict';
+
 function AverageController(d3) {
   this.calculate = function() {
     var avg = d3.median(this.guesses);
@@ -538,7 +660,7 @@ angular.module(window.appName)
 
 function DistributionTableController(d3, $scope) {
   var self = this;
-  this.monthFormat = d3.time.format("%Y-%m");
+  this.monthFormat = d3.time.format("%Y - %B");
 
   $scope.$watch('ctrl.guesses', function(data) {
     self.dates = self.parseData(data);
@@ -575,128 +697,6 @@ function DistributionTableDirective() {
 
 angular.module(window.appName)
        .directive('gsDistributionTable', DistributionTableDirective);
-}());
-
-/*eslint no-console: 0*/
-/*eslint no-debugger: 0*/
-
-(function() {
-'use strict';
-
-function AuthService($rootScope, $firebaseAuth, FIREBASE_URL, UserFactory) {
-  var fb = new Firebase(FIREBASE_URL),
-      usersRef = new Firebase(FIREBASE_URL + 'users');
-  var firebaseAuthObject = $firebaseAuth(fb);
-  var service = {
-    user: {}
-  };
-
-  ////////////
-
-  function setUser(auth) {
-    service.user.auth = auth;
-
-    if(auth) {
-      service.user.current = UserFactory.new(auth.uid);
-      service.user.ref = usersRef.child(auth.uid);
-      service.user.ref.child('updated_at').set(Firebase.ServerValue.TIMESTAMP);
-      var details = {
-        id: auth.github.id,
-        displayName: auth.github.displayName,
-        username: auth.github.username,
-        profileImageURL: auth.github.profileImageURL
-      };
-      service.user.ref.child('auth').set(details);
-    } else {
-      service.user.current = null;
-      service.user.ref = null;
-    }
-  }
-
-  function login() {
-    return firebaseAuthObject.$authWithOAuthPopup('github');
-  }
-
-  function logout() {
-    $rootScope.$broadcast('logout');
-    firebaseAuthObject.$unauth();
-    setUser(null);
-  }
-
-  service.setUser = setUser;
-  service.firebaseAuthObject = firebaseAuthObject;
-  service.prepareAuthentication = firebaseAuthObject.$waitForAuth;
-  service.login = login;
-  service.logout = logout;
-  service.$onAuth = firebaseAuthObject.$onAuth;
-
-  firebaseAuthObject.$onAuth(function(auth) {
-    service.user.auth = auth;
-    if(auth) {
-      setUser(auth);
-    }
-  });
-
-  return service;
-}
-
-AuthService.$inject = ['$rootScope', '$firebaseAuth', 'FIREBASE_URL', 'UserFactory'];
-
-angular.module(window.appName).factory('AuthService', AuthService);
-
-}());
-
-/*eslint no-console: 0*/
-/*eslint no-debugger: 0*/
-
-
-(function() {
-'use strict';
-
-function UserFactory($firebaseObject, $firebaseArray, FIREBASE_URL) {
-  var users = new Firebase(FIREBASE_URL + 'users'),
-      all = $firebaseArray(users);
-
-  var User = $firebaseObject.$extend({
-
-    $$updated: function () {
-      // call the super
-      var changed = $firebaseObject.prototype.$$updated.apply(this, arguments);
-
-      if(changed) {
-        if(this.guessDate) {
-          this.guessDate = new Date(this.guessDate);
-        } else {
-          this.guessDate = null;
-        }
-      }
-
-      return changed;
-    },
-
-    toJSON: function() {
-      return angular.extend({}, this, {
-        guessDate: this.guessDate ? this.guessDate.getTime() : null
-      });
-    }
-
-  });
-
-  function newUser(userId) {
-    var ref = users.child(userId);
-    return new User(ref);
-  }
-
-  return {
-    new: newUser,
-    all: all
-  };
-}
-
-UserFactory.$inject = ['$firebaseObject', '$firebaseArray', 'FIREBASE_URL'];
-
-angular.module(window.appName).factory('UserFactory', UserFactory);
-
 }());
 
 (function() {

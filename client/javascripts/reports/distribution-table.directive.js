@@ -6,7 +6,7 @@
 
 function DistributionTableController(d3, $scope) {
   var self = this;
-  this.monthFormat = d3.time.format("%Y-%m");
+  this.monthFormat = d3.time.format("%Y - %B");
 
   $scope.$watch('ctrl.guesses', function(data) {
     self.dates = self.parseData(data);
