@@ -160,18 +160,18 @@ function DistributionChartController(_, d3, $scope) {
   };
 
   this.updateMeanLine = function(data) {
-    var mean = new Date(d3.median(data));
-    console.log('mean', mean);
+    var mean = new Date(d3.median(data)),
+        offset = this.x(mean) + this.margin.left;
 
     if(!this.medianGroup) {
       this.medianGroup = this.svg.append("g")
         .attr('class', 'date--group')
-        .attr("transform", "translate(" + this.x(mean) + "," + 0 + ")");
+        .attr("transform", "translate(" + offset + "," + 0 + ")");
     } else {
       this.medianGroup.transition()
             .duration(this.updateDuration * 2)
             .ease("linear")
-          .attr("transform", "translate(" + this.x(mean) + "," + 0 + ")");
+          .attr("transform", "translate(" + offset + "," + 0 + ")");
     }
 
     if(!this.meanLine) {
