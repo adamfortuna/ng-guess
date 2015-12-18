@@ -6,7 +6,7 @@
 
 function AverageController(d3) {
   this.calculate = function() {
-    var avg = d3.mean(this.guesses);
+    var avg = d3.median(this.guesses);
     return new Date(avg);
   };
 }

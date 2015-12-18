@@ -11,11 +11,14 @@ text {
   font-size: 12px;
 }
 
-.line {
+.line, .line--weighted {
   fill: none;
   stroke: #0179db;
   stroke-width: 4px;
-  opacity: 0.2;
+  opacity: 0.8;
+}
+.line--weighted {
+ stroke: #b52e31;
 }
 
 .date--group {

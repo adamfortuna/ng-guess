@@ -4,10 +4,10 @@
 (function() {
 'use strict';
 
-function DistributionChartController(d3, $scope) {
+function DistributionChartController(_, d3, $scope) {
   var self = this;
   this.margin = {
-      top: 10,
+      top: 50,
       right: 25,
       bottom: 30,
       left: 25
@@ -51,11 +51,28 @@ function DistributionChartController(d3, $scope) {
     }
   };
 
-  this.parseData = function(data) {
+  this.nestedData = function(data) {
     var dates = data.sort(data, this.sortByDateAscending);
-    var updatedData = d3.nest().key(function(d) {
+    return d3.nest().key(function(d) {
       return self.monthFormat(new Date(d));
     }).entries(dates);
+  };
+
+  this.weightData = function(data) {
+    var sortedDates = _.clone(data).sort(),
+        length = sortedDates.length;
+
+    sortedDates.splice(Math.floor(length * 0.9), length);
+    sortedDates.splice(0, Math.ceil(length * 0.1));
+
+    return this.padData(this.nestedData(sortedDates));
+  };
+
+  // Pad the data with one additional month with value of 0 on both sides
+  this.padData = function(updatedData) {
+    if(updatedData.length === 0) {
+      return updatedData;
+    }
 
     var now = new Date(),
         year = now.getFullYear(),
@@ -88,16 +105,23 @@ function DistributionChartController(d3, $scope) {
     return updatedData;
   };
 
+  this.parseData = function(data) {
+    var updatedData = this.nestedData(_.clone(data));
+    return this.padData(updatedData);
+  };
+
   this.update = function(rawData) {
     if(this.svg) {
       this.data = this.parseData(rawData);
+      this.weightedData = this.weightData(rawData);
       this.updateScales(this.data);
       this.updateAxis(this.data);
       this.updateLine(this.data);
+      this.updateWeightedLine(this.weightedData);
       this.updateMeanLine(rawData);
 
-      this.rect.on("mousemove", null);
-      this.rect.on("mousemove", this.mousemove);
+      this.rect.on('mousemove', null);
+      this.rect.on('mousemove', this.mousemove);
     }
   };
 
@@ -128,8 +152,15 @@ function DistributionChartController(d3, $scope) {
       .attr('d', this.line);
   };
 
+  this.updateWeightedLine = function(data) {
+    this.weightedPath.datum(data)
+      .transition()
+        .duration(this.updateDuration)
+      .attr('d', this.line);
+  };
+
   this.updateMeanLine = function(data) {
-    var mean = new Date(d3.mean(data));
+    var mean = new Date(d3.median(data));
 
     if(!this.medianGroup) {
       this.medianGroup = this.svg.append("g")
@@ -149,7 +180,7 @@ function DistributionChartController(d3, $scope) {
         .attr("x1", 0)
         .attr("y1", 0)
         .attr("x2", 0)
-        .attr("y2", this.height)
+        .attr("y2", this.height + this.margin.top)
         .attr("stroke-width", 2)
         .attr("stroke", "black");
       // Add a box
@@ -172,6 +203,7 @@ function DistributionChartController(d3, $scope) {
   this.startChart = function() {
     var data = this.parseData(this.guesses);
     this.data = data;
+    this.weightedData = this.weightData(this.guesses);
 
     this.x = d3.time.scale().range([0, this.width]);
     this.y = d3.scale.linear().range([this.height, 0]);
@@ -186,12 +218,12 @@ function DistributionChartController(d3, $scope) {
     // Draw main svg container
     this.svg = d3.select(this.el[0]).append("svg")
       .attr("width", this.width + this.margin.left + this.margin.right)
-      .attr("height", this.height + this.margin.top + this.margin.bottom)
-      .append("g")
+      .attr("height", this.height + this.margin.top + this.margin.bottom);
+    this.group = this.svg.append("g")
       .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 
     // Draw X-axis
-    this.xAxisElement = this.svg.append('g')
+    this.xAxisElement = this.group.append('g')
       .attr('class', 'x axis x-axis')
       .attr('transform', 'translate(0,' + this.height + ')')
       .call(this.xAxis);
@@ -206,7 +238,7 @@ function DistributionChartController(d3, $scope) {
         return self.y(d.values.length);
       });
 
-    this.path = this.svg.append('path')
+    this.path = this.group.append('path')
       .datum(data)
       .attr('class', 'line')
       .attr('d', this.line);
@@ -221,20 +253,30 @@ function DistributionChartController(d3, $scope) {
         .attr("stroke-dashoffset", 0);
     }
 
+
+
+    // Draw the weighted line
+    this.weightedPath = this.group.append('path')
+      .datum(this.weightedData)
+      .attr('class', 'line--weighted')
+      .attr('d', this.line);
+
+
+
     // Draw Median Line
     this.updateMeanLine(this.guesses);
 
 
 
     // Mouseover
-    this.focus = this.svg.append('g')
+    this.focus = this.group.append('g')
       .attr('class', 'focus')
       .style('display', 'none');
     this.focus.append('circle').attr('r', 4.5);
     this.focus.append('text')
       .attr('x', 9)
       .attr('dy', '.35em');
-    this.rect = this.svg.append("rect")
+    this.rect = this.group.append("rect")
           .attr("class", "overlay")
           .attr("width", this.width)
           .attr("height", this.height)
