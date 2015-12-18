@@ -17,7 +17,11 @@
       <div ng-if='ctrl.user.updated_at'>
         <gs-date user='ctrl.user'></gs-date>
       </div>
+    </div>
 
+    <gs-share ng-show='ctrl.guessMade()'></gs-share>
+
+    <div ng-if='ctrl.auth'>
       <div ng-if='ctrl.guessMade()'>
         <div class='guess--overview row' ng-if='ctrl.guesses.length > 0'>
           <gs-average class='col-md-5 col-md-offset-3' guesses='ctrl.guesses'></gs-average>
@@ -31,7 +35,7 @@
   </div>
 </div>
 
-<div class='row learn-angular' ng-if='ctrl.auth'>
+<div class='row learn-angular' ng-if='ctrl.auth' ng-show='ctrl.guessMade()'>
   <h2 class='text-center col-md-11'>Learn Angular Today</h2>
   <div class='card col-md-4 col-md-offset-1'>
     <img class="card-img-top" src="/images/angular-badge.png" alt="Shaping Up With Angular.js Logo">
